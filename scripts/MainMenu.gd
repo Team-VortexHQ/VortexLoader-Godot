@@ -2,68 +2,120 @@ extends Node
 
 @onready var ver = $Version
 @onready var load = $LoadButton
+@onready var open = $Open
 @onready var VR = $VR
+@onready var wrld = $World
 var curVer = "V1.0"
 var path = ""
 var vrchatExc = ""
+var novr = ""
+var worldPath = ""
+var vrcwpath = ""
 var file_dialog : FileDialog
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	ver.text = curVer
 	path = get_vrchat_path()
-	vrchatExc = path + "\\VRChat.exe"
+	vrchatExc = path
+	load.connect("pressed",Callable(self, "open_file_dialog"))
+	open.connect("pressed", Callable(self, "open_vrc"))
 
-	# Create and configure the FileDialog
-	file_dialog = FileDialog.new()
-	add_child(file_dialog)
-	
-	# Set the filter for file types (in this case, "*.vrcw")
-	file_dialog.filters = ["*.vrcw"]
-	
-	# Connect the signal correctly (using Callable(self, method_name))
-	file_dialog.connect("file_selected", Callable(self, "_on_file_selected"))  # Correct usage
-	
-	# Connect the VR button press
 	VR.connect("pressed",Callable(self, "_on_VR_pressed"))
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if vrchatExc != "":
-		if VR.pressed:
-			vrchatExc += " --no-vr"
+		if !VR.pressed:
+			novr = " --no-vr"			
+		else:
+			novr = " "
 		if load.action_mode == 0:
-			# Open the file dialog when the load button is pressed
-			# Debug: Ensure that the condition is met and check the console if it's being triggered
-			print("Trying to open file dialog")
-			file_dialog.popup_centered()
+			open_file_dialog()
 
-# Signal handler for the VR button
-func _on_VR_pressed():
-	print("VR Button Pressed!")
-	# Handle VR button press logic here
-
-# Signal handler for the file selection
 func _on_file_selected(path: String):
-	print("File selected: ", path)
-	# Handle the selected file path, for example:
-	# You could load or process the `.vrcw` file here
-	vrchatExc = path  # Assign the selected file to the vrchatExc variable
+	vrchatExc = path  
 
 func get_vrchat_path() -> String:
-	var result = []
-	var error = OS.execute("reg", ["query", "HKCU\\Software\\VRChat"], result, true)
-	
-	if error == OK:
-		if result.size() == 0:
-			print("No output from registry query.")
-			return ""  # Return an empty string if no result is found
+
+	var steam_path_result = []
+	var steam_reg_error = OS.execute("reg", ["query", "HKLM\\SOFTWARE\\WOW6432Node\\Valve\\Steam", "/v", "InstallPath"], steam_path_result, true)
+
+	if steam_reg_error != OK:
+		print("Error accessing Steam registry key.")
+		return ""
+
+	var steam_path = ""
+	for line in steam_path_result:
+		if "REG_SZ" in line:
+			steam_path = line.split("REG_SZ")[-1].strip_edges()
+			break
+
+	if steam_path == "":
+		print("Steam install path not found in registry.")
+		return ""
+
+	var library_file = steam_path + "\\steamapps\\libraryfolders.vdf"
+	if not FileAccess.file_exists(library_file):
+		print("Steam libraryfolders.vdf not found.")
+		return ""
+
+	var file = FileAccess.open(library_file, FileAccess.READ)
+	if file == null:
+		print("Failed to open Steam libraryfolders.vdf.")
+		return ""
+
+	var vdf_content = file.get_as_text()
+	file.close()
+
+	var regex = RegEx.new()
+	regex.compile('"path"\\s+"([^"]+)"')
+	var matches = regex.search_all(vdf_content)
+
+	var potential_paths = []
+
+	for match in matches:
+		var library_path = match.get_string(1).replace("\\\\", "\\")  
+		var vrchat_path = library_path + "\\steamapps\\common\\VRChat\\VRChat.exe"
+		if FileAccess.file_exists(vrchat_path):
+			print("VRChat found at:", vrchat_path)
+			return vrchat_path
 		else:
-			for line in result:
-				if line.begins_with("(Default)"):
-					var vrchat_path = line.split("    ")[-1].strip_edges()  # Extract and clean up the path
-					return vrchat_path  # Return the VRChat path
-	else:
-		print("Error accessing registry: ", error)
+			potential_paths.append(vrchat_path)
+
+	print("VRChat executable not found in any Steam library folder. Checked paths:", potential_paths)
+	return ""
+
+func open_file_dialog():
+	wrld.visible = true
+
+func _on_world_file_selected(path: String):
+	if path.is_empty():
+		print("Error: No world file selected!")
+		return
+
+	print("Selected path:", path)  
+	worldPath = path
+	var random_room_id = str(rand_count(10))
+	vrcwpath = '--url=create?roomId=' + random_room_id + '&hidden=true&name=BuildAndRun&url=file:///' + worldPath.replace("\\", "/") + novr
+	print("Generated VRChat URL:", vrcwpath)
+
+func open_vrc():
+	if vrcwpath == "":
+		print("Error: vrcwpath is empty!")
+		return
+
+	var args = [vrcwpath]
+	var result = OS.execute(vrchatExc, args)
 	
-	return ""  # Ensure that an empty string is returned if there was an issue
+	if result != 0:
+		print("Failed to launch VRChat! Error code:", result)
+	else:
+		print("VRChat launched successfully!")
+		get_tree().quit()
+
+func rand_count(num:int):
+	var nums = []
+	var final_num:String = ""
+	for i in range(num):
+		nums.append(randi_range(0,10))
+		final_num += str(nums[i])
+	return final_num
