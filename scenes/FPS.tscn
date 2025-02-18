@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://cex1q5lgu486c"]
+
+[ext_resource type="Script" path="res://scripts/FPS.gd" id="1_3nigx"]
+[ext_resource type="Theme" uid="uid://dcschist2ktyy" path="res://scenes/theme/Default.tres" id="2_nysn1"]
+
+[node name="FPS" type="Node2D"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("1_3nigx")
+
+[node name="FPSLabel" type="RichTextLabel" parent="CanvasLayer"]
+offset_left = 919.0
+offset_right = 1152.0
+offset_bottom = 54.0
+theme = ExtResource("2_nysn1")
+bbcode_enabled = true
+text = "FPS: 2000"
+fit_content = true
+
+[node name="Settings" type="Button" parent="CanvasLayer/FPSLabel"]
+offset_left = 22.0
+offset_top = 73.0
+offset_right = 148.0
+offset_bottom = 133.0
+theme = ExtResource("2_nysn1")
+theme_override_font_sizes/font_size = 39
+text = "Main
+"

@@ -1,3 +1,63 @@
-[gd_scene format=3 uid="uid://ifqyte8oy7xs"]
+[gd_scene load_steps=8 format=3 uid="uid://ifqyte8oy7xs"]
+
+[ext_resource type="Script" path="res://scripts/Settings.gd" id="1_1n4w6"]
+[ext_resource type="Shader" path="res://shaders/Cool.gdshader" id="2_uf451"]
+[ext_resource type="Texture2D" uid="uid://hft5ucarxhco" path="res://assets/images/BG.png" id="3_j7gi7"]
+[ext_resource type="Texture2D" uid="uid://dewpp60m8avf1" path="res://assets/images/LogoParts/LoaderText.png" id="4_qfdnc"]
+[ext_resource type="Texture2D" uid="uid://clu5keb6qhkw6" path="res://assets/images/LogoParts/VortexLoaderLogo.png" id="5_q2cpx"]
+[ext_resource type="Theme" uid="uid://dcschist2ktyy" path="res://scenes/theme/Default.tres" id="6_7v26r"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8g0nh"]
+render_priority = 0
+shader = ExtResource("2_uf451")
 
 [node name="Settings" type="Node2D"]
+script = ExtResource("1_1n4w6")
+
+[node name="BG" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_8g0nh")
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("3_j7gi7")
+centered = false
+
+[node name="LoaderText" type="Sprite2D" parent="BG"]
+position = Vector2(203, 47)
+scale = Vector2(0.323469, 0.323469)
+texture = ExtResource("4_qfdnc")
+
+[node name="VortexLoaderLogo" type="Sprite2D" parent="BG"]
+position = Vector2(428, 36)
+scale = Vector2(0.0652685, 0.0652685)
+texture = ExtResource("5_q2cpx")
+
+[node name="Settings" type="Button" parent="BG/VortexLoaderLogo"]
+offset_left = 22.0
+offset_top = 73.0
+offset_right = 148.0
+offset_bottom = 133.0
+theme = ExtResource("6_7v26r")
+theme_override_font_sizes/font_size = 39
+text = "Main
+"
+
+[node name="Settings" type="Button" parent="BG"]
+offset_left = 22.0
+offset_top = 73.0
+offset_right = 112.0
+offset_bottom = 111.0
+theme = ExtResource("6_7v26r")
+theme_override_font_sizes/font_size = 29
+text = "Main
+"
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+offset_left = 341.0
+offset_top = 304.0
+offset_right = 835.0
+offset_bottom = 347.0
+theme = ExtResource("6_7v26r")
+theme_override_font_sizes/normal_font_size = 41
+bbcode_enabled = true
+text = "This will be added in 1.1!"
+
+[connection signal="pressed" from="BG/Settings" to="." method="_on_settings_pressed"]

@@ -1,10 +1,11 @@
 extends Node
 
-@onready var ver = $Version
-@onready var load = $LoadButton
-@onready var open = $Open
-@onready var VR = $VR
-@onready var wrld = $World
+@onready var ver = $Control/Version
+@onready var load = $Control/LoadButton
+@onready var open = $Control/Open
+@onready var VR = $Control/VR
+@onready var wrld = $Control/World
+@onready var windowScale = $Control
 var curVer = "V1.0"
 var path = ""
 var vrchatExc = ""
@@ -20,7 +21,10 @@ func _ready():
 	load.connect("pressed",Callable(self, "open_file_dialog"))
 	open.connect("pressed", Callable(self, "open_vrc"))
 
-	VR.connect("pressed",Callable(self, "_on_VR_pressed"))
+	if (!VR.button_pressed):
+		novr = " --no-vr"
+	else:
+		novr = ""
 
 func _process(delta):
 	if vrchatExc != "":
@@ -95,16 +99,19 @@ func _on_world_file_selected(path: String):
 	print("Selected path:", path)  
 	worldPath = path
 	var random_room_id = str(rand_count(10))
-	vrcwpath = '--url=create?roomId=' + random_room_id + '&hidden=true&name=BuildAndRun&url=file:///' + worldPath.replace("\\", "/") + novr
+	if (!VR.pressed):
+			vrcwpath = '--url=create?roomId=' + random_room_id + '&hidden=true&name=BuildAndRun&url=file:///' + worldPath.replace("\\", "/") + novr 
+	else:
+			print("test")
+			vrcwpath = '--url=create?roomId=' + random_room_id + '&hidden=true&name=BuildAndRun&url=file:///' + worldPath.replace("\\", "/")
 	print("Generated VRChat URL:", vrcwpath)
-
 func open_vrc():
 	if vrcwpath == "":
 		print("Error: vrcwpath is empty!")
 		return
 
 	var args = [vrcwpath]
-	var result = OS.execute(vrchatExc, args)
+	var result = OS.create_process(vrchatExc, args)
 	
 	if result != 0:
 		print("Failed to launch VRChat! Error code:", result)

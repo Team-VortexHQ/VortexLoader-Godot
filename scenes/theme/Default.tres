@@ -1,0 +1,10 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dcschist2ktyy"]
+
+[ext_resource type="FontFile" uid="uid://cie7ow1f4eb4j" path="res://assets/fonts/Kallisto Medium.otf" id="1_h3poj"]
+[ext_resource type="FontFile" uid="uid://qqvp7jyoivbo" path="res://assets/fonts/Kallisto Bold.otf" id="2_f8wpg"]
+
+[resource]
+default_font = ExtResource("2_f8wpg")
+default_font_size = 17
+Fonts/fonts/large = ExtResource("1_h3poj")
+Fonts/fonts/normal = ExtResource("1_h3poj")
